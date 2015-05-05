@@ -13,8 +13,8 @@ use LWP::UserAgent;
 my $usage = "This script will send a notification to hipchat.\n
 \tUsage:
 \t\t-room      Hipchat room name or ID.                      Example: '-room \"test\"'
-\t\t-token     Hipchat Authentication token.                 Example: '-token\"abc\"'
-\t\t-message   Message to be sent to room.                   Example: '-message\"Hello World!\"'
+\t\t-token     Hipchat Authentication token.                 Example: '-token \"abc\"'
+\t\t-message   Message to be sent to room.                   Example: '-message \"Hello World!\"'
 \t\t-type      (Optional) Hipchat message type (text|html).  Example: '-type \"text\"'                   (default: text)
 \t\t-API       (Optional) Hipchat API Version. (v1|v2).      Example: '-type \"v2\"'                     (default: v2)
 \t\t-notify    (Optional) Message will trigger notification. Example: '-notify \"true\"'                 (default: false)
