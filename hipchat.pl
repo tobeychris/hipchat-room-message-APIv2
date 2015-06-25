@@ -63,16 +63,16 @@ $default_type          = "text";
 $message_limit         = 10000;
 
 #Get the input options.
-GetOptions( "room=s"   => \$optionRoom,
-            "token=s"  => \$optionToken,
-            "message=s"=> \$optionMessage,
-            "from=s"   => \$optionFrom,
-            "type=s"   => \$optionType,
-            "api=s"    => \$optionAPI,
-            "proxy=s"  => \$optionProxy,
-            "notify=s" => \$optionNotify,
-            "colour=s" => \$optionColour,
-            "debug=s"  => \$optionDebug);
+GetOptions( "room=s"         => \$optionRoom,
+            "token=s"        => \$optionToken,
+            "message=s"      => \$optionMessage,
+            "from=s"         => \$optionFrom,
+            "type=s"         => \$optionType,
+            "api=s"          => \$optionAPI,
+            "proxy=s"        => \$optionProxy,
+            "notify=s"       => \$optionNotify,
+            "colour|color=s" => \$optionColour,
+            "debug=s"        => \$optionDebug);
 
 ##############################
 ## VERIFY OPTIONS
