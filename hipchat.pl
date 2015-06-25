@@ -9,6 +9,7 @@ use warnings;
 use strict;
 use Getopt::Long;
 use LWP::UserAgent;
+use JSON;
 
 my $usage = "This script will send a notification to hipchat.\n
 \tUsage:
@@ -227,8 +228,12 @@ if ($optionAPI eq "v1")
 elsif ($optionAPI eq "v2")
 {
    $hipchat_url = "$hipchat_host\/$optionAPI\/room/$optionRoom/notification?auth_token=$optionToken";
-   $hipchat_json = "{\"color\":\"$optionColour\", \"message\":\"$optionMessage\", \"message_format\":\"$optionType\", \"notify\":$optionNotify}";
-   
+   $hipchat_json = encode_json({
+      color    => $optionColour,
+      message  => $optionMessage,
+      message_format => $optionType,
+      notify => $optionNotify,
+   });
    $request = HTTP::Request->new(POST => $hipchat_url);
    $request->content_type('application/json');
    $request->content($hipchat_json);
