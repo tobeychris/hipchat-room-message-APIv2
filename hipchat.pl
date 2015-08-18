@@ -22,6 +22,7 @@ my $usage = "This script will send a notification to hipchat.\n
 \t\t-colour    (Optional) Message colour (y|r|g|p|g|random)  Example: '-colour \"green\"'                (default: yellow)
 \t\t-from      (Optional) Name message is to be sent from.   Example: '-from \"Test\"'                   (only used with APIv1)
 \t\t-proxy     (Optional) Network proxy to use.              Example: '-proxy \"http://127.0.0.1:3128\"'
+\t\t-host      (Optional) HipChat server to use.             Example: '-host \"https://hipchat.company.net\"'
 \n\tBasic Example:
 \t\thipchat.pl -room \"test\" -token \"abc\" -message \"Hello World!\" 
 \n\tFull Example:
@@ -38,7 +39,7 @@ my $optionProxy        = "";
 my $optionNotify       = "";
 my $optionColour       = "";
 my $optionDebug        = "";
-my $hipchat_host       = "";
+my $optionHipchatHost  = "https://api.hipchat.com";
 my $hipchat_url        = "";
 my $hipchat_json       = "";
 my $message_limit      = "";
@@ -57,7 +58,6 @@ my $response           = "";
 my $exit_code          = "";
 
 #Set some options statically.
-$hipchat_host          = "https://api.hipchat.com";
 $default_colour        = "yellow";
 $default_API           = "v2";
 $default_type          = "text";
@@ -71,6 +71,7 @@ GetOptions( "room=s"         => \$optionRoom,
             "type=s"         => \$optionType,
             "api=s"          => \$optionAPI,
             "proxy=s"        => \$optionProxy,
+            "host=s"         => \$optionHipchatHost,
             "notify=s"       => \$optionNotify,
             "colour|color=s" => \$optionColour,
             "debug=s"        => \$optionDebug);
@@ -212,7 +213,7 @@ if ($optionProxy ne "")
 #Submit the notification based on API version
 if ($optionAPI eq "v1")
 {
-   $hipchat_url = "$hipchat_host\/$optionAPI\/rooms/message";
+   $hipchat_url = "$optionHipchatHost\/$optionAPI\/rooms/message";
 
    $response = $ua->post($hipchat_url, {
          auth_token=> $optionToken,
@@ -227,7 +228,7 @@ if ($optionAPI eq "v1")
 } 
 elsif ($optionAPI eq "v2")
 {
-   $hipchat_url = "$hipchat_host\/$optionAPI\/room/$optionRoom/notification?auth_token=$optionToken";
+   $hipchat_url = "$optionHipchatHost\/$optionAPI\/room/$optionRoom/notification?auth_token=$optionToken";
    $hipchat_json = encode_json({
       color    => $optionColour,
       message  => $optionMessage,
