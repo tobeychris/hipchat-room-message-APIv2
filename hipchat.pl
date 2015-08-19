@@ -27,19 +27,21 @@ my $usage = "This script will send a notification to hipchat.\n
 \t\thipchat.pl -room \"test\" -token \"abc\" -message \"Hello World!\" 
 \n\tFull Example:
 \t\thipchat.pl -room \"test\" -token \"abc\" -message \"Hello World!\" -type text -api v2 -notify true -colour green -proxy http://127.0.0.1:3128
+\n\tIf set, the following environment variables will be used for default values, but will be overridden by command line parameters:
+\t\tHIPCHAT_ROOM, HIPCHAT_TOKEN, HIPCHAT_FROM, HIPCHAT_API, HIPCHAT_PROXY, HIPCHAT_HOST
 \n";
 
-my $optionRoom         = "";
-my $optionToken        = "";
+my $optionRoom         = $ENV{HIPCHAT_ROOM} || "";
+my $optionToken        = $ENV{HIPCHAT_TOKEN} || "";
 my $optionMessage      = "";
-my $optionFrom         = "";
+my $optionFrom         = $ENV{HIPCHAT_FROM} || "";
 my $optionType         = "";
-my $optionAPI          = "";
-my $optionProxy        = "";
+my $optionAPI          = $ENV{HIPCHAT_API} || "";
+my $optionProxy        = $ENV{HIPCHAT_PROXY} || "";
 my $optionNotify       = "";
 my $optionColour       = "";
-my $optionDebug        = "";
-my $optionHipchatHost  = "https://api.hipchat.com";
+my $optionDebug        = $ENV{HIPCHAT_DEBUG} || "";
+my $optionHipchatHost  = $ENV{HIPCHAT_HOST} || "https://api.hipchat.com";
 my $hipchat_url        = "";
 my $hipchat_json       = "";
 my $message_limit      = "";
@@ -258,7 +260,7 @@ else
 }
 
 #Print some debug info if requested.
-if ($optionDebug ne "")
+if ($optionDebug)
 {
    print $response->decoded_content . "\n";
    print "URL            = $hipchat_url\n";
