@@ -76,7 +76,7 @@ GetOptions( "room=s"         => \$optionRoom,
             "host=s"         => \$optionHipchatHost,
             "notify=s"       => \$optionNotify,
             "colour|color=s" => \$optionColour,
-            "debug=s"        => \$optionDebug);
+            "debug=s"        => \$optionDebug) || die ("$usage\n");;
 
 ##############################
 ## VERIFY OPTIONS
