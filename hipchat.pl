@@ -22,23 +22,26 @@ my $usage = "This script will send a notification to hipchat.\n
 \t\t-colour    (Optional) Message colour (y|r|g|p|g|random)  Example: '-colour \"green\"'                (default: yellow)
 \t\t-from      (Optional) Name message is to be sent from.   Example: '-from \"Test\"'                   (only used with APIv1)
 \t\t-proxy     (Optional) Network proxy to use.              Example: '-proxy \"http://127.0.0.1:3128\"'
+\t\t-host      (Optional) HipChat server to use.             Example: '-host \"https://hipchat.company.net\"'
 \n\tBasic Example:
 \t\thipchat.pl -room \"test\" -token \"abc\" -message \"Hello World!\" 
 \n\tFull Example:
 \t\thipchat.pl -room \"test\" -token \"abc\" -message \"Hello World!\" -type text -api v2 -notify true -colour green -proxy http://127.0.0.1:3128
+\n\tIf set, the following environment variables will be used for default values, but will be overridden by command line parameters:
+\t\tHIPCHAT_ROOM, HIPCHAT_TOKEN, HIPCHAT_FROM, HIPCHAT_API, HIPCHAT_PROXY, HIPCHAT_HOST
 \n";
 
-my $optionRoom         = "";
-my $optionToken        = "";
+my $optionRoom         = $ENV{HIPCHAT_ROOM} || "";
+my $optionToken        = $ENV{HIPCHAT_TOKEN} || "";
 my $optionMessage      = "";
-my $optionFrom         = "";
+my $optionFrom         = $ENV{HIPCHAT_FROM} || "";
 my $optionType         = "";
-my $optionAPI          = "";
-my $optionProxy        = "";
+my $optionAPI          = $ENV{HIPCHAT_API} || "";
+my $optionProxy        = $ENV{HIPCHAT_PROXY} || "";
 my $optionNotify       = "";
 my $optionColour       = "";
-my $optionDebug        = "";
-my $hipchat_host       = "";
+my $optionDebug        = $ENV{HIPCHAT_DEBUG} || "";
+my $optionHipchatHost  = $ENV{HIPCHAT_HOST} || "https://api.hipchat.com";
 my $hipchat_url        = "";
 my $hipchat_json       = "";
 my $message_limit      = "";
@@ -57,7 +60,6 @@ my $response           = "";
 my $exit_code          = "";
 
 #Set some options statically.
-$hipchat_host          = "https://api.hipchat.com";
 $default_colour        = "yellow";
 $default_API           = "v2";
 $default_type          = "text";
@@ -71,9 +73,10 @@ GetOptions( "room=s"         => \$optionRoom,
             "type=s"         => \$optionType,
             "api=s"          => \$optionAPI,
             "proxy=s"        => \$optionProxy,
+            "host=s"         => \$optionHipchatHost,
             "notify=s"       => \$optionNotify,
             "colour|color=s" => \$optionColour,
-            "debug=s"        => \$optionDebug);
+            "debug=s"        => \$optionDebug) || die ("$usage\n");;
 
 ##############################
 ## VERIFY OPTIONS
@@ -212,7 +215,7 @@ if ($optionProxy ne "")
 #Submit the notification based on API version
 if ($optionAPI eq "v1")
 {
-   $hipchat_url = "$hipchat_host\/$optionAPI\/rooms/message";
+   $hipchat_url = "$optionHipchatHost\/$optionAPI\/rooms/message";
 
    $response = $ua->post($hipchat_url, {
          auth_token=> $optionToken,
@@ -227,7 +230,7 @@ if ($optionAPI eq "v1")
 } 
 elsif ($optionAPI eq "v2")
 {
-   $hipchat_url = "$hipchat_host\/$optionAPI\/room/$optionRoom/notification?auth_token=$optionToken";
+   $hipchat_url = "$optionHipchatHost\/$optionAPI\/room/$optionRoom/notification?auth_token=$optionToken";
    $hipchat_json = encode_json({
       color    => $optionColour,
       message  => $optionMessage,
@@ -257,7 +260,7 @@ else
 }
 
 #Print some debug info if requested.
-if ($optionDebug ne "")
+if ($optionDebug)
 {
    print $response->decoded_content . "\n";
    print "URL            = $hipchat_url\n";
