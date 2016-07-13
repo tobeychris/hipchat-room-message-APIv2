@@ -17,6 +17,7 @@ Sample Script Output
         -API       (Optional) Hipchat API Version. (v1|v2).      Example: '-type "v2"'                     (default: v2)
         -notify    (Optional) Message will trigger notification. Example: '-notify "true"'                 (default: false)
         -colour    (Optional) Message colour (y|r|g|p|g|random)  Example: '-colour "green"'                (default: yellow)
+        -card      (Optional) Display Message as a Card          Example: '-card "some_JSON_repr"          (only used with APIv2)
         -from      (Optional) Name message is to be sent from.   Example: '-from "Test"'                   (only used with APIv1)
         -proxy     (Optional) Network proxy to use.              Example: '-proxy "http://127.0.0.1:3128"'
         -host      (Optional) Hipchat server to use.             Example: '-host "https://hipchat.company.net"'
