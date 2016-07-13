@@ -11,6 +11,9 @@ use Getopt::Long;
 use LWP::UserAgent;
 use JSON;
 
+$ENV{PERL_LWP_SSL_VERIFY_HOSTNAME}=0;
+
+
 my $usage = "This script will send a notification to hipchat.\n
 \tUsage:
 \t\t-room      Hipchat room name or ID.                      Example: '-room \"test\"'
@@ -20,6 +23,7 @@ my $usage = "This script will send a notification to hipchat.\n
 \t\t-API       (Optional) Hipchat API Version. (v1|v2).      Example: '-type \"v2\"'                     (default: v2)
 \t\t-notify    (Optional) Message will trigger notification. Example: '-notify \"true\"'                 (default: false)
 \t\t-colour    (Optional) Message colour (y|r|g|p|g|random)  Example: '-colour \"green\"'                (default: yellow)
+\t\t-card      (Optional) Display Message as a Card          Example: '-card \"some_JSON_repr\"          (only used with APIv2)
 \t\t-from      (Optional) Name message is to be sent from.   Example: '-from \"Test\"'                   (only used with APIv1)
 \t\t-proxy     (Optional) Network proxy to use.              Example: '-proxy \"http://127.0.0.1:3128\"'
 \t\t-host      (Optional) HipChat server to use.             Example: '-host \"https://hipchat.company.net\"'
@@ -29,6 +33,7 @@ my $usage = "This script will send a notification to hipchat.\n
 \t\thipchat.pl -room \"test\" -token \"abc\" -message \"Hello World!\" -type text -api v2 -notify true -colour green -proxy http://127.0.0.1:3128
 \n\tIf set, the following environment variables will be used for default values, but will be overridden by command line parameters:
 \t\tHIPCHAT_ROOM, HIPCHAT_TOKEN, HIPCHAT_FROM, HIPCHAT_API, HIPCHAT_PROXY, HIPCHAT_HOST
+\t\tIf Card is used, a regular message is needed too for clients not able to render cards
 \n";
 
 my $optionRoom         = $ENV{HIPCHAT_ROOM} || "";
@@ -42,6 +47,7 @@ my $optionNotify       = "";
 my $optionColour       = "";
 my $optionDebug        = $ENV{HIPCHAT_DEBUG} || "";
 my $optionHipchatHost  = $ENV{HIPCHAT_HOST} || "https://api.hipchat.com";
+my $optionCard         = "";
 my $hipchat_url        = "";
 my $hipchat_json       = "";
 my $message_limit      = "";
@@ -76,6 +82,7 @@ GetOptions( "room=s"         => \$optionRoom,
             "host=s"         => \$optionHipchatHost,
             "notify=s"       => \$optionNotify,
             "colour|color=s" => \$optionColour,
+            "card=s"         => \$optionCard,
             "debug=s"        => \$optionDebug) || die ("$usage\n");;
 
 ##############################
@@ -231,12 +238,25 @@ if ($optionAPI eq "v1")
 elsif ($optionAPI eq "v2")
 {
    $hipchat_url = "$optionHipchatHost\/$optionAPI\/room/$optionRoom/notification?auth_token=$optionToken";
-   $hipchat_json = encode_json({
-      color    => $optionColour,
-      message  => $optionMessage,
-      message_format => $optionType,
-      notify => $optionNotify,
-   });
+   
+   if($optionCard eq ""){
+      # No card available
+      $hipchat_json = encode_json({
+         color    => $optionColour,
+         message  => $optionMessage,
+         message_format => $optionType,
+         notify => $optionNotify
+      });
+   } else {
+      $hipchat_json = encode_json({
+         color    => $optionColour,
+         message  => $optionMessage,
+         message_format => $optionType,
+         notify => $optionNotify,
+         card => decode_json($optionCard)
+      });
+   }
+
    $request = HTTP::Request->new(POST => $hipchat_url);
    $request->content_type('application/json');
    $request->content($hipchat_json);
