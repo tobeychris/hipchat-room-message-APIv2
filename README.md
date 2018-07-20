@@ -11,6 +11,7 @@ Sample Script Output
 
     Usage:
         -room      Hipchat room name or ID.                      Example: '-room "test"'
+        -user      Hipchat user @name, email or ID. (v2 only)    Example: '-user "@TestUser"'
         -token     Hipchat Authentication token.                 Example: '-token "abc"'
         -message   Message to be sent to room.                   Example: '-message "Hello World!"'
         -type      (Optional) Hipchat message type (text|html).  Example: '-type "text"'                   (default: text)
