@@ -14,24 +14,26 @@ use JSON;
 my $usage = "This script will send a notification to hipchat.\n
 \tUsage:
 \t\t-room      Hipchat room name or ID.                      Example: '-room \"test\"'
+\t\t-user      Hipchat user \@name, email or ID. (v2 only)    Example: '-user \"\@TestUser\"'
 \t\t-token     Hipchat Authentication token.                 Example: '-token \"abc\"'
 \t\t-message   Message to be sent to room.                   Example: '-message \"Hello World!\"'
 \t\t-type      (Optional) Hipchat message type (text|html).  Example: '-type \"text\"'                   (default: text)
-\t\t-API       (Optional) Hipchat API Version. (v1|v2).      Example: '-type \"v2\"'                     (default: v2)
+\t\t-API       (Optional) Hipchat API Version. (v1|v2).      Example: '-api \"v2\"'                      (default: v2)
 \t\t-notify    (Optional) Message will trigger notification. Example: '-notify \"true\"'                 (default: false)
 \t\t-colour    (Optional) Message colour (y|r|g|p|g|random)  Example: '-colour \"green\"'                (default: yellow)
 \t\t-from      (Optional) Name message is to be sent from.   Example: '-from \"Test\"'                   (only used with APIv1)
 \t\t-proxy     (Optional) Network proxy to use.              Example: '-proxy \"http://127.0.0.1:3128\"'
 \t\t-host      (Optional) HipChat server to use.             Example: '-host \"https://hipchat.company.net\"'
 \n\tBasic Example:
-\t\thipchat.pl -room \"test\" -token \"abc\" -message \"Hello World!\" 
+\t\thipchat.pl -room \"test\" -token \"abc\" -message \"Hello World!\"
 \n\tFull Example:
 \t\thipchat.pl -room \"test\" -token \"abc\" -message \"Hello World!\" -type text -api v2 -notify true -colour green -proxy http://127.0.0.1:3128
 \n\tIf set, the following environment variables will be used for default values, but will be overridden by command line parameters:
-\t\tHIPCHAT_ROOM, HIPCHAT_TOKEN, HIPCHAT_FROM, HIPCHAT_API, HIPCHAT_PROXY, HIPCHAT_HOST
+\t\tHIPCHAT_ROOM, HIPCHAT_USER, HIPCHAT_TOKEN, HIPCHAT_FROM, HIPCHAT_API, HIPCHAT_PROXY, HIPCHAT_HOST
 \n";
 
 my $optionRoom         = $ENV{HIPCHAT_ROOM} || "";
+my $optionUser         = $ENV{HIPCHAT_USER} || "";
 my $optionToken        = $ENV{HIPCHAT_TOKEN} || "";
 my $optionMessage      = "";
 my $optionFrom         = $ENV{HIPCHAT_FROM} || "";
@@ -67,6 +69,7 @@ $message_limit         = 10000;
 
 #Get the input options.
 GetOptions( "room=s"         => \$optionRoom,
+            "user=s"         => \$optionUser,
             "token=s"        => \$optionToken,
             "message=s"      => \$optionMessage,
             "from=s"         => \$optionFrom,
@@ -84,9 +87,15 @@ GetOptions( "room=s"         => \$optionRoom,
 
 #Check to verify that all options are valid before continuing.
 
-if ($optionRoom eq "")
+if ($optionRoom eq "" && $optionUser eq "")
 {
-   print "\tYou must specify a Hipchat room!\n";
+   print "\tYou must specify a Hipchat room or user!\n";
+   die ("$usage\n");
+}
+
+if ($optionRoom && $optionUser)
+{
+   print "\tUser and room options are mutually exclusive!\n";
    die ("$usage\n");
 }
 
@@ -96,14 +105,14 @@ if ($optionToken eq "")
    die ("$usage\n");
 }
 
-if ($optionMessage eq "") 
+if ($optionMessage eq "")
 {
    print "\tYou must specify a message to post!\n";
    die ($usage);
 }
 
 #Check that the API version is valid.
-if ($optionAPI eq "") 
+if ($optionAPI eq "")
 {
    $optionAPI = $default_API;
 }
@@ -122,8 +131,14 @@ if (!$api_is_valid)
    die ("$usage\n");
 }
 
+if ($optionAPI eq 'v1' && $optionUser)
+{
+   print "\tYou cannot use --user option with v1 api!\n";
+   die ("$usage\n");
+}
+
 #Check that the From name exists if using API v1.
-if ($optionFrom eq "") 
+if ($optionFrom eq "")
 {
    if ($optionAPI eq "v1")
    {
@@ -136,11 +151,11 @@ if ($optionFrom eq "")
 if (length($optionMessage) > $message_limit)
 {
    print "\tMessage must be $message_limit characters or less!\n";
-   die ("$usage\n");   
+   die ("$usage\n");
 }
 
 #Check that the message type is valid.
-if ($optionType eq "") 
+if ($optionType eq "")
 {
    $optionType = $default_type;
 }
@@ -177,7 +192,7 @@ else
 }
 
 #Check that the colour is valid.
-if ($optionColour eq "") 
+if ($optionColour eq "")
 {
    $optionColour = $default_colour;
 }
@@ -227,16 +242,28 @@ if ($optionAPI eq "v1")
          color => $optionColour,
          format => 'json',
       });
-} 
+}
 elsif ($optionAPI eq "v2")
 {
-   $hipchat_url = "$optionHipchatHost\/$optionAPI\/room/$optionRoom/notification?auth_token=$optionToken";
-   $hipchat_json = encode_json({
-      color    => $optionColour,
-      message  => $optionMessage,
-      message_format => $optionType,
-      notify => $optionNotify,
-   });
+   if ($optionUser)
+   {
+      $hipchat_url = "$optionHipchatHost\/$optionAPI\/user/$optionUser/message?auth_token=$optionToken";
+      $hipchat_json = encode_json({
+         message  => $optionMessage,
+         message_format => $optionType,
+         notify => $optionNotify,
+      });
+   }
+   else
+   {
+      $hipchat_url = "$optionHipchatHost\/$optionAPI\/room/$optionRoom/notification?auth_token=$optionToken";
+      $hipchat_json = encode_json({
+         color    => $optionColour,
+         message  => $optionMessage,
+         message_format => $optionType,
+         notify => $optionNotify,
+      });
+   }
    $request = HTTP::Request->new(POST => $hipchat_url);
    $request->content_type('application/json');
    $request->content($hipchat_json);

@@ -11,10 +11,11 @@ Sample Script Output
 
     Usage:
         -room      Hipchat room name or ID.                      Example: '-room "test"'
+        -user      Hipchat user @name, email or ID. (v2 only)    Example: '-user "@TestUser"'
         -token     Hipchat Authentication token.                 Example: '-token "abc"'
         -message   Message to be sent to room.                   Example: '-message "Hello World!"'
         -type      (Optional) Hipchat message type (text|html).  Example: '-type "text"'                   (default: text)
-        -API       (Optional) Hipchat API Version. (v1|v2).      Example: '-type "v2"'                     (default: v2)
+        -API       (Optional) Hipchat API Version. (v1|v2).      Example: '-api "v2"'                      (default: v2)
         -notify    (Optional) Message will trigger notification. Example: '-notify "true"'                 (default: false)
         -colour    (Optional) Message colour (y|r|g|p|g|random)  Example: '-colour "green"'                (default: yellow)
         -from      (Optional) Name message is to be sent from.   Example: '-from "Test"'                   (only used with APIv1)
